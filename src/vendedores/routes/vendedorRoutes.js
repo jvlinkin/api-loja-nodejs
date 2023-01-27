@@ -41,6 +41,8 @@ vendedorRoutes.get("/status", vendedorController.listaTodos);
 
 vendedorRoutes.get("/:id", vendedorController.ListaVendedor);
 
+vendedorRoutes.patch('/editar/:id', vendedorController.Editar);
+
 //routes
 
 module.exports = vendedorRoutes;

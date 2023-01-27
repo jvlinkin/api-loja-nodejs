@@ -56,6 +56,7 @@ clientesRoutes.post(
 );
 
 clientesRoutes.get("/listar", clienteController.ListarClientes);
-clientesRoutes.get('/:id', clienteController.ListaCliente)
+clientesRoutes.get("/:id", clienteController.ListaCliente);
+clientesRoutes.patch("/editar/:id", clienteController.Editar);
 
 module.exports = clientesRoutes;

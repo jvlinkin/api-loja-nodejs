@@ -123,6 +123,43 @@ class ClienteController {
 
     return res.status(200).json(clienteData);
   }
+
+  async Editar(req, res) {
+    const { id } = req.params;
+    const clienteBody = req.body;
+
+    try {
+      const cliente = await clienteModel.findById(id);
+
+      if (!cliente) {
+        return res.status(200).json({ message: "Cliente não encontrado." });
+      }
+
+      if (Object.keys(req.body).length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Naõ existe nenhum dado para atualizar." });
+      }
+
+      const clienteData = {
+        ...clienteBody,
+      };
+
+      const dados_atualizados = await clienteModel.findByIdAndUpdate(
+        id,
+        clienteData
+      );
+
+      return res.status(200).json({
+        message: "Dados atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.log("ERRO: ", error);
+      return res
+        .status(500)
+        .json({ message: "Ocorreu um erro, tente novamente" });
+    }
+  }
 }
 
 module.exports = ClienteController;

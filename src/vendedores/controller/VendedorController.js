@@ -103,6 +103,43 @@ class VendedorController {
 
     return res.status(200).json(vendedor_info);
   }
+
+  async Editar(req, res) {
+    const { id } = req.params;
+    const vendedorBody = req.body;
+
+    try {
+      const vendedor = await vendedorModel.findById(id);
+
+      if (!vendedor) {
+        return res.status(200).json({ message: "Vendedor não encontrado." });
+      }
+
+      if (Object.keys(req.body).length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Naõ existe nenhum dado para atualizar." });
+      }
+
+      const vendedorData = {
+        ...vendedorBody,
+      };
+
+      const dados_atualizados = await vendedorModel.findByIdAndUpdate(
+        id,
+        vendedorData
+      );
+
+      return res.status(200).json({
+        message: "Dados atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.log("ERRO: ", error);
+      return res
+        .status(500)
+        .json({ message: "Ocorreu um erro, tente novamente" });
+    }
+  }
 }
 
 module.exports = VendedorController;

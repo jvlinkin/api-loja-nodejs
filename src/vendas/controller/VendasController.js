@@ -1,6 +1,7 @@
 const clienteModel = require("../../clientes/models/clientesModel");
 const vendedorModel = require("../../vendedores/models/vendedorModel");
 const vendasModel = require("../models/vendasModel");
+const moment = require("moment");
 class VendasController {
   async cadastrarVenda(req, res) {
     const { clienteId, vendedorId, valorCompra, formaPagamento } = req.body;
@@ -116,6 +117,45 @@ class VendasController {
 
     return res.status(200).json(venda_info);
   }
+
+  async Editar(req, res) {
+    const { id } = req.params;
+    const vendaBody = req.body;
+
+    try {
+      const venda = await vendasModel.findById(id);
+
+      if (!venda) {
+        return res.status(200).json({ message: "Venda não encontrada." });
+      }
+
+      if (Object.keys(req.body).length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Naõ existe nenhum dado para atualizar." });
+      }
+
+      const vendaData = {
+        ...vendaBody,
+      };
+
+      const dados_atualizados = await vendasModel.findByIdAndUpdate(
+        id,
+        vendaData
+      );
+
+      return res.status(200).json({
+        message: "Dados atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.log("ERRO: ", error);
+      return res
+        .status(500)
+        .json({ message: "Ocorreu um erro, tente novamente" });
+    }
+  }
+
+  async ResumoPorMes(req, res) {}
 }
 
 module.exports = VendasController;
