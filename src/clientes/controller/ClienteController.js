@@ -35,9 +35,10 @@ class ClienteController {
     await clienteData
       .save()
       .then(() => {
-        return res
-          .status(200)
-          .json({ message: "Cliente cadastrado com sucesso!", clienteData });
+        return res.status(200).json({
+          status: 200,
+          message: "Cliente cadastrado com sucesso!",
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -55,7 +56,7 @@ class ClienteController {
     const clientes = await clienteModel.find({ ativo: true }).sort("nome");
 
     if (!clientes) {
-      return res.status(200).json({ message: "Nenhum cliente encontrado." });
+      return res.status(404).json({ message: "Nenhum cliente encontrado." });
     }
 
     const listaClientes = [];
@@ -151,6 +152,7 @@ class ClienteController {
       );
 
       return res.status(200).json({
+        status: 200,
         message: "Dados atualizados com sucesso.",
       });
     } catch (error) {
