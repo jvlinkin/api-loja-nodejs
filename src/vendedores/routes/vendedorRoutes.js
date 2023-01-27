@@ -3,6 +3,7 @@ const vendedorRoutes = Router();
 const VendedorController = require("../controller/VendedorController");
 
 const { celebrate, Joi, Segments } = require("celebrate");
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 
 //Instanciando a classe VendedorController para podermos utilizar seus métodos.
 const vendedorController = new VendedorController();
@@ -41,7 +42,11 @@ vendedorRoutes.get("/status", vendedorController.listaTodos);
 
 vendedorRoutes.get("/:id", vendedorController.ListaVendedor);
 
-vendedorRoutes.patch('/editar/:id', vendedorController.Editar);
+vendedorRoutes.patch(
+  "/editar/:id/:usuario_id",
+  isAuthenticated,
+  vendedorController.Editar
+);
 
 //routes
 

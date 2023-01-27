@@ -139,10 +139,7 @@ class VendasController {
         ...vendaBody,
       };
 
-      const dados_atualizados = await vendasModel.findByIdAndUpdate(
-        id,
-        vendaData
-      );
+      await vendasModel.findByIdAndUpdate(id, vendaData);
 
       return res.status(200).json({
         status: 200,

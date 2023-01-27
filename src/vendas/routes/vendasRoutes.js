@@ -3,6 +3,7 @@ const VendasController = require("../controller/VendasController");
 const vendasRoutes = Router();
 const vendasController = new VendasController();
 const { celebrate, Joi, Segments } = require("celebrate");
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 
 //routes
 vendasRoutes.post(
@@ -41,6 +42,10 @@ vendasRoutes.post(
 vendasRoutes.get("/listatodos", vendasController.listatodos);
 vendasRoutes.get("/:id", vendasController.listavenda);
 vendasRoutes.get("/resumo/:mes", vendasController.ResumoPorMes);
-vendasRoutes.patch("/editar/:id", vendasController.Editar);
+vendasRoutes.patch(
+  "/editar/:id/:usuario_id",
+  isAuthenticated,
+  vendasController.Editar
+);
 
 module.exports = vendasRoutes;

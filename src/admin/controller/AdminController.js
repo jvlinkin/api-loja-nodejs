@@ -69,7 +69,7 @@ class AdminController {
       expiresIn: auth.jwt.expiresIn,
     });
 
-    
+    //Adicionando 1h de validade do token.
     const now = new Date();
     now.setHours(now.getHours() + 1);
 

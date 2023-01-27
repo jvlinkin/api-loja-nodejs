@@ -3,6 +3,7 @@ const ClienteController = require("../controller/ClienteController");
 const clientesRoutes = Router();
 const clienteController = new ClienteController();
 const { celebrate, Joi, Segments } = require("celebrate");
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 
 //cadastrar um cliente
 
@@ -57,6 +58,12 @@ clientesRoutes.post(
 
 clientesRoutes.get("/listar", clienteController.ListarClientes);
 clientesRoutes.get("/:id", clienteController.ListaCliente);
-clientesRoutes.patch("/editar/:id", clienteController.Editar);
+
+//Id cliente, e id usuário
+clientesRoutes.patch(
+  "/editar/:id/:usuario_id",
+  isAuthenticated,
+  clienteController.Editar
+);
 
 module.exports = clientesRoutes;
