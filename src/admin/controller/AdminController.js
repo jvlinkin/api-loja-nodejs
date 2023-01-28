@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const adminModel = require("../models/adminModel");
 const auth = require("../../config/auth");
 const vendasModel = require("../../vendas/models/vendasModel");
+const clienteModel = require("../../clientes/models/clientesModel");
 
 class AdminController {
   async Cadastro(req, res) {
@@ -226,11 +227,54 @@ class AdminController {
     });
     dados.total_vendas.vendas = totalVendas;
 
-    /*
-    vendedoresModel:
-    - Quantidade total de comissão;
-    - Quantidade de clientes novos;
-    */
+    const qtdTotalComissao = await vendasModel
+      .aggregate([
+        {
+          $match: {
+            dataCompra: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total_comissao: { $sum: "$valorComissao" },
+          },
+        },
+      ])
+      .exec();
+    let totalComissao = 0;
+    qtdTotalComissao.forEach((result) => {
+      totalComissao += result.total_comissao;
+    });
+    dados.qtd_total_comissao.quantidade = Number(totalComissao.toFixed(2));
+
+    const qtdClientesNovos = await clienteModel
+      .aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total_clientes: { $sum: 1 },
+          },
+        },
+      ])
+      .exec();
+
+    let totalClientes = 0;
+    qtdClientesNovos.forEach((result) => {
+      totalClientes += result.total_clientes;
+    });
+    dados.clientes_novos.quantidade = totalClientes;
 
     return res.json(dados);
   }

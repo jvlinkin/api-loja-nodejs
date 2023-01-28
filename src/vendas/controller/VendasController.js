@@ -37,6 +37,7 @@ class VendasController {
       nomeVendedor: vendedor.nome,
       valorCompra,
       formaPagamento,
+      valorComissao: valorCompra * vendedor.porcentagemComissao,
     });
 
     await vendaData

@@ -27,6 +27,10 @@ const vendasModel = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    valorComissao: {
+      type: Number,
+      required: true,
+    },
     formaPagamento: {
       type: String,
       enum: ["pix", "cartão", "dinheiro"],
