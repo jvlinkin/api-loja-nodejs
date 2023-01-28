@@ -152,8 +152,6 @@ class VendasController {
         .json({ message: "Ocorreu um erro, tente novamente" });
     }
   }
-
-  async ResumoPorMes(req, res) {}
 }
 
 module.exports = VendasController;

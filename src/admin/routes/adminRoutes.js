@@ -57,4 +57,25 @@ adminRoutes.post(
   adminController.Login
 );
 
+adminRoutes.get(
+  "/resumo/:mes/:ano",
+  celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      mes: Joi.string()
+        .length(2)
+        .message("Número de caracteres deve ter no máximo dois dígitos")
+        .pattern(new RegExp("^(0[1-9]|1[0-2])$"))
+        .message("Mês inválido.")
+        .required(),
+      ano: Joi.string()
+        .length(4)
+        .message("Número de caracteres deve ter quatro dígitos")
+        .pattern(new RegExp("^(20[2-9][0-9])$"))
+        .message("ANo inválido.")
+        .required(),
+    }),
+  }),
+  adminController.Resumo
+);
+
 module.exports = adminRoutes;

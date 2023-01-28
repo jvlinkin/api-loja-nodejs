@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const adminModel = require("../models/adminModel");
 const auth = require("../../config/auth");
+const vendasModel = require("../../vendas/models/vendasModel");
 
 class AdminController {
   async Cadastro(req, res) {
@@ -85,6 +86,153 @@ class AdminController {
       message: "Login realizado com sucesso",
       token: token,
     });
+  }
+
+  async Resumo(req, res) {
+    const { mes, ano } = req.params;
+
+    const dados = {
+      qtd_vendas_forma_pagamento: {
+        pix: 0, //2,
+        cartao: 0, //2,
+        dinheiro: 0, //2
+      },
+
+      total_vendas_forma_pagamento: {
+        pix: 0, //2,
+        cartao: 0, //2,
+        dinheiro: 0, //2
+      },
+
+      qtd_total_formas_pagamento: {
+        vendas: 0,
+      },
+      total_vendas: {
+        vendas: 0,
+      },
+
+      qtd_total_comissao: {
+        quantidade: 0,
+      },
+      clientes_novos: {
+        quantidade: 0,
+      },
+    };
+
+    const qtdVendasFormaPagamento = await vendasModel
+      .aggregate([
+        {
+          $match: {
+            dataCompra: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$formaPagamento",
+            quantidade: { $sum: 1 },
+          },
+        },
+      ])
+      .exec();
+
+    qtdVendasFormaPagamento.forEach((result) => {
+      if (result._id === "pix") {
+        dados.qtd_vendas_forma_pagamento.pix += result.quantidade;
+      } else if (result._id === "dinheiro") {
+        dados.qtd_vendas_forma_pagamento.dinheiro += result.quantidade;
+      } else if (result._id === "cartão") {
+        dados.qtd_vendas_forma_pagamento.cartao += result.quantidade;
+      }
+    });
+
+    const vlrTotalVendasFormaPagamento = await vendasModel
+      .aggregate([
+        {
+          $match: {
+            dataCompra: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$formaPagamento",
+            totalVendas: { $sum: "$valorCompra" },
+          },
+        },
+      ])
+      .exec();
+
+    vlrTotalVendasFormaPagamento.forEach((result) => {
+      if (result._id === "pix") {
+        dados.total_vendas_forma_pagamento.pix += result.totalVendas;
+      } else if (result._id === "dinheiro") {
+        dados.total_vendas_forma_pagamento.dinheiro += result.totalVendas;
+      } else if (result._id === "cartão") {
+        dados.total_vendas_forma_pagamento.cartao += result.totalVendas;
+      }
+    });
+
+    const qtdTotalVendasFormaPagamento = await vendasModel
+      .aggregate([
+        {
+          $match: {
+            dataCompra: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$formaPagamento",
+            total: { $sum: "$valorCompra" },
+          },
+        },
+      ])
+      .exec();
+
+    let total = 0;
+    qtdTotalVendasFormaPagamento.forEach((result) => {
+      total += result.total;
+    });
+    dados.qtd_total_formas_pagamento.vendas = Number(total.toFixed(2));
+
+    const totalVendasFormaPagamento = await vendasModel
+      .aggregate([
+        {
+          $match: {
+            dataCompra: {
+              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total_vendas: { $sum: 1 },
+          },
+        },
+      ])
+      .exec();
+    let totalVendas = 0;
+    totalVendasFormaPagamento.forEach((result) => {
+      totalVendas += result.total_vendas;
+    });
+    dados.total_vendas.vendas = totalVendas;
+
+    /*
+    vendedoresModel:
+    - Quantidade total de comissão;
+    - Quantidade de clientes novos;
+    */
+
+    return res.json(dados);
   }
 }
 

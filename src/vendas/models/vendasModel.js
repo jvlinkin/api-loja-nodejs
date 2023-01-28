@@ -20,8 +20,8 @@ const vendasModel = new mongoose.Schema(
       required: true,
     },
     dataCompra: {
-      type: String,
-      default: moment(Date.now()).format("DD-MM-YYYY HH:mm:ss"),
+      type: Date,
+      default: new Date(),
     },
     valorCompra: {
       type: Number,

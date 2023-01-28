@@ -41,7 +41,6 @@ vendasRoutes.post(
 
 vendasRoutes.get("/listatodos", vendasController.listatodos);
 vendasRoutes.get("/:id", vendasController.listavenda);
-vendasRoutes.get("/resumo/:mes", vendasController.ResumoPorMes);
 vendasRoutes.patch(
   "/editar/:id/:usuario_id",
   isAuthenticated,
