@@ -19,6 +19,10 @@ const vendedorModel = new mongoose.Schema(
       type: String,
       required: true,
     },
+    senha: {
+      type: String,
+      required: true,
+    },
     dataContratacao: {
       type: String,
       default: moment(Date.now()).format("DD-MM-YYYY"),

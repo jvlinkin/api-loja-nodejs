@@ -2,12 +2,13 @@ const vendedorModel = require("../models/vendedorModel");
 const adminModel = require("../../admin/models/adminModel");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const vendasModel = require("../../vendas/models/vendasModel");
 
 class VendedorController {
   async cadastrarVendedor(req, res) {
     const { usuario_id } = req.params; //admin
-    const { nome, idade, cidade, email, porcentagemComissao } = req.body;
+    const { nome, idade, cidade, email, senha, porcentagemComissao } = req.body;
 
     const isAdmin = await adminModel.findById(usuario_id);
     if (!isAdmin.isAdmin) {
@@ -21,11 +22,16 @@ class VendedorController {
       return res.status(400).json({ message: "Vendedor já existe." });
     }
 
+    //hash
+    const salt = await bcrypt.genSalt(15);
+    const senhaHash = await bcrypt.hash(senha, salt);
+
     const userData = new vendedorModel({
       nome,
       idade,
       cidade,
       email,
+      senha: senhaHash,
       porcentagemComissao,
     });
 

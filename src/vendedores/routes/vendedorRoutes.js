@@ -13,6 +13,7 @@ const emailRegex = new RegExp(
 
 vendedorRoutes.post(
   "/:usuario_id/cadastrar",
+  isAuthenticated,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       usuario_id: Joi.string()
@@ -36,6 +37,12 @@ vendedorRoutes.post(
         .pattern(emailRegex)
         .message("Padrão de e-mail incorreto")
         .max(200)
+        .required(),
+      senha: Joi.string()
+        .min(4)
+        .message("Número de caracteres inválido")
+        .max(20)
+        .message("Número de caracteres inválido")
         .required(),
       porcentagemComissao: Joi.number().optional(),
     }),
