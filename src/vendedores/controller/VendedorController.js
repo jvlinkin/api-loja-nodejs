@@ -1,11 +1,20 @@
 const vendedorModel = require("../models/vendedorModel");
+const adminModel = require("../../admin/models/adminModel");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const vendasModel = require("../../vendas/models/vendasModel");
 
 class VendedorController {
   async cadastrarVendedor(req, res) {
+    const { usuario_id } = req.params; //admin
     const { nome, idade, cidade, email, porcentagemComissao } = req.body;
+
+    const isAdmin = await adminModel.findById(usuario_id);
+    if (!isAdmin.isAdmin) {
+      return res.status(400).json({
+        message: "Admin não autorizado a fazer esse tipo de operação.",
+      });
+    }
 
     const user = await vendedorModel.findOne({ email });
     if (user) {
@@ -105,10 +114,18 @@ class VendedorController {
   }
 
   async Editar(req, res) {
-    const { id } = req.params;
+    const { id, usuario_id } = req.params;
     const vendedorBody = req.body;
 
     try {
+      const isAdmin = await adminModel.findById(usuario_id);
+      if (!isAdmin) {
+        return res.status(400).json({ message: "Admin não encontrado." });
+      }
+
+      if (!isAdmin.isAdmin) {
+        return res.status(400).json({ message: "Admin não tem permissão." });
+      }
       const vendedor = await vendedorModel.findById(id);
 
       if (!vendedor) {
@@ -125,10 +142,7 @@ class VendedorController {
         ...vendedorBody,
       };
 
-      const dados_atualizados = await vendedorModel.findByIdAndUpdate(
-        id,
-        vendedorData
-      );
+      await vendedorModel.findByIdAndUpdate(id, vendedorData);
 
       return res.status(200).json({
         status: 200,

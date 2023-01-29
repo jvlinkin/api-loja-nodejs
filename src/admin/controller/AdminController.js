@@ -11,6 +11,17 @@ const clienteModel = require("../../clientes/models/clientesModel");
 class AdminController {
   async Cadastro(req, res) {
     const { nome, email, senha } = req.body;
+    const { usuario_id } = req.params;
+
+    const isAdmin = await adminModel.findById(usuario_id);
+    if (!isAdmin) {
+      return res.status(400).json({ message: "Admin não encontrado." });
+    }
+    if (!isAdmin.isAdmin) {
+      return res.status(400).json({
+        message: "Admin não autorizado a fazer esse tipo de operação.",
+      });
+    }
 
     const admin = await adminModel.findOne({ email });
 
@@ -90,7 +101,7 @@ class AdminController {
   }
 
   async Resumo(req, res) {
-    const { mes, ano } = req.params;
+    const { usuario_id, mes, ano } = req.params;
 
     const dados = {
       qtd_vendas_forma_pagamento: {
@@ -120,163 +131,177 @@ class AdminController {
       },
     };
 
-    const qtdVendasFormaPagamento = await vendasModel
-      .aggregate([
-        {
-          $match: {
-            dataCompra: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
-            },
-          },
-        },
-        {
-          $group: {
-            _id: "$formaPagamento",
-            quantidade: { $sum: 1 },
-          },
-        },
-      ])
-      .exec();
-
-    qtdVendasFormaPagamento.forEach((result) => {
-      if (result._id === "pix") {
-        dados.qtd_vendas_forma_pagamento.pix += result.quantidade;
-      } else if (result._id === "dinheiro") {
-        dados.qtd_vendas_forma_pagamento.dinheiro += result.quantidade;
-      } else if (result._id === "cartão") {
-        dados.qtd_vendas_forma_pagamento.cartao += result.quantidade;
+    try {
+      //validando se admin tem permissão para gerar o relatório
+      const admIsAdmin = await adminModel.findById(usuario_id);
+      if (!admIsAdmin.isAdmin) {
+        return res.status(400).json({
+          message: "Admin não autorizado a fazer esse tipo de operação.",
+        });
       }
-    });
-
-    const vlrTotalVendasFormaPagamento = await vendasModel
-      .aggregate([
-        {
-          $match: {
-            dataCompra: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+      const qtdVendasFormaPagamento = await vendasModel
+        .aggregate([
+          {
+            $match: {
+              dataCompra: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
             },
           },
-        },
-        {
-          $group: {
-            _id: "$formaPagamento",
-            totalVendas: { $sum: "$valorCompra" },
-          },
-        },
-      ])
-      .exec();
-
-    vlrTotalVendasFormaPagamento.forEach((result) => {
-      if (result._id === "pix") {
-        dados.total_vendas_forma_pagamento.pix += result.totalVendas;
-      } else if (result._id === "dinheiro") {
-        dados.total_vendas_forma_pagamento.dinheiro += result.totalVendas;
-      } else if (result._id === "cartão") {
-        dados.total_vendas_forma_pagamento.cartao += result.totalVendas;
-      }
-    });
-
-    const qtdTotalVendasFormaPagamento = await vendasModel
-      .aggregate([
-        {
-          $match: {
-            dataCompra: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+          {
+            $group: {
+              _id: "$formaPagamento",
+              quantidade: { $sum: 1 },
             },
           },
-        },
-        {
-          $group: {
-            _id: "$formaPagamento",
-            total: { $sum: "$valorCompra" },
-          },
-        },
-      ])
-      .exec();
+        ])
+        .exec();
 
-    let total = 0;
-    qtdTotalVendasFormaPagamento.forEach((result) => {
-      total += result.total;
-    });
-    dados.qtd_total_formas_pagamento.vendas = Number(total.toFixed(2));
+      qtdVendasFormaPagamento.forEach((result) => {
+        if (result._id === "pix") {
+          dados.qtd_vendas_forma_pagamento.pix += result.quantidade;
+        } else if (result._id === "dinheiro") {
+          dados.qtd_vendas_forma_pagamento.dinheiro += result.quantidade;
+        } else if (result._id === "cartão") {
+          dados.qtd_vendas_forma_pagamento.cartao += result.quantidade;
+        }
+      });
 
-    const totalVendasFormaPagamento = await vendasModel
-      .aggregate([
-        {
-          $match: {
-            dataCompra: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+      const vlrTotalVendasFormaPagamento = await vendasModel
+        .aggregate([
+          {
+            $match: {
+              dataCompra: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
             },
           },
-        },
-        {
-          $group: {
-            _id: null,
-            total_vendas: { $sum: 1 },
-          },
-        },
-      ])
-      .exec();
-    let totalVendas = 0;
-    totalVendasFormaPagamento.forEach((result) => {
-      totalVendas += result.total_vendas;
-    });
-    dados.total_vendas.vendas = totalVendas;
-
-    const qtdTotalComissao = await vendasModel
-      .aggregate([
-        {
-          $match: {
-            dataCompra: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+          {
+            $group: {
+              _id: "$formaPagamento",
+              totalVendas: { $sum: "$valorCompra" },
             },
           },
-        },
-        {
-          $group: {
-            _id: null,
-            total_comissao: { $sum: "$valorComissao" },
-          },
-        },
-      ])
-      .exec();
-    let totalComissao = 0;
-    qtdTotalComissao.forEach((result) => {
-      totalComissao += result.total_comissao;
-    });
-    dados.qtd_total_comissao.quantidade = Number(totalComissao.toFixed(2));
+        ])
+        .exec();
 
-    const qtdClientesNovos = await clienteModel
-      .aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
-              $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+      vlrTotalVendasFormaPagamento.forEach((result) => {
+        if (result._id === "pix") {
+          dados.total_vendas_forma_pagamento.pix += result.totalVendas;
+        } else if (result._id === "dinheiro") {
+          dados.total_vendas_forma_pagamento.dinheiro += result.totalVendas;
+        } else if (result._id === "cartão") {
+          dados.total_vendas_forma_pagamento.cartao += result.totalVendas;
+        }
+      });
+
+      const qtdTotalVendasFormaPagamento = await vendasModel
+        .aggregate([
+          {
+            $match: {
+              dataCompra: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
             },
           },
-        },
-        {
-          $group: {
-            _id: null,
-            total_clientes: { $sum: 1 },
+          {
+            $group: {
+              _id: "$formaPagamento",
+              total: { $sum: "$valorCompra" },
+            },
           },
-        },
-      ])
-      .exec();
+        ])
+        .exec();
 
-    let totalClientes = 0;
-    qtdClientesNovos.forEach((result) => {
-      totalClientes += result.total_clientes;
-    });
-    dados.clientes_novos.quantidade = totalClientes;
+      let total = 0;
+      qtdTotalVendasFormaPagamento.forEach((result) => {
+        total += result.total;
+      });
+      dados.qtd_total_formas_pagamento.vendas = Number(total.toFixed(2));
 
-    return res.json(dados);
+      const totalVendasFormaPagamento = await vendasModel
+        .aggregate([
+          {
+            $match: {
+              dataCompra: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total_vendas: { $sum: 1 },
+            },
+          },
+        ])
+        .exec();
+      let totalVendas = 0;
+      totalVendasFormaPagamento.forEach((result) => {
+        totalVendas += result.total_vendas;
+      });
+      dados.total_vendas.vendas = totalVendas;
+
+      const qtdTotalComissao = await vendasModel
+        .aggregate([
+          {
+            $match: {
+              dataCompra: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total_comissao: { $sum: "$valorComissao" },
+            },
+          },
+        ])
+        .exec();
+      let totalComissao = 0;
+      qtdTotalComissao.forEach((result) => {
+        totalComissao += result.total_comissao;
+      });
+      dados.qtd_total_comissao.quantidade = Number(totalComissao.toFixed(2));
+
+      const qtdClientesNovos = await clienteModel
+        .aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(`${ano}-${mes}-01T00:00:00.000Z`),
+                $lt: new Date(`${ano}-${mes}-31T23:59:59.999Z`),
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total_clientes: { $sum: 1 },
+            },
+          },
+        ])
+        .exec();
+
+      let totalClientes = 0;
+      qtdClientesNovos.forEach((result) => {
+        totalClientes += result.total_clientes;
+      });
+      dados.clientes_novos.quantidade = totalClientes;
+
+      return res.json(dados);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Não foi possível gerar o relatório. Tente novamente.",
+      });
+    }
   }
 }
 

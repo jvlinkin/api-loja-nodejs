@@ -37,6 +37,11 @@ const vendedorModel = new mongoose.Schema(
       default: moment().startOf("day").hours(18).format("HH:mm"),
       required: true,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     ativo: {
       type: Boolean,
       default: true,

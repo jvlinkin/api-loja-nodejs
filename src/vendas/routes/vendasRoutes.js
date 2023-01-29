@@ -8,6 +8,7 @@ const isAuthenticated = require("../../middlewares/isAuthenticated");
 //routes
 vendasRoutes.post(
   "/cadastrar",
+  isAuthenticated,
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       clienteId: Joi.string()

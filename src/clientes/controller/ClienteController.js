@@ -1,11 +1,18 @@
 const clienteModel = require("../models/clientesModel");
 const vendedorModel = require("../../vendedores/models/vendedorModel");
 const vendasModel = require("../../vendas/models/vendasModel");
+const adminModel = require("../../admin/models/adminModel");
 
 class ClienteController {
   async CadastrarCliente(req, res) {
     const { nome, idade, email, telefone, cpf, cep, complemento, vendedorId } =
       req.body;
+    const { usuario_id } = req.params;
+
+    const isAdmin = await adminModel.findById(usuario_id);
+    if (!isAdmin) {
+      return res.status(400).json({ message: "Admin não encontrado." });
+    }
 
     const cliente = await clienteModel.findOne({ email });
 
@@ -13,7 +20,6 @@ class ClienteController {
       return res.status(400).json({ message: "Cliente já está cadastrado." });
     }
 
-    //vendedorId.toString();
     const vendedor = await vendedorModel.findById(vendedorId);
 
     if (!vendedor) {
@@ -126,10 +132,19 @@ class ClienteController {
   }
 
   async Editar(req, res) {
-    const { id } = req.params;
+    const { id, usuario_id } = req.params;
     const clienteBody = req.body;
 
     try {
+      const isAdmin = await adminModel.findById(usuario_id);
+      if (!isAdmin.isAdmin) {
+        return res
+          .status(400)
+          .json({
+            message: "Admin não tem permissão para executar essa ação.",
+          });
+      }
+
       const cliente = await clienteModel.findById(id);
 
       if (!cliente) {

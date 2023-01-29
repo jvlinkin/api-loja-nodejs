@@ -41,6 +41,11 @@ const adminModel = new mongoose.Schema(
       default: true,
       required: true,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
   },
   {
     timestamps: true,

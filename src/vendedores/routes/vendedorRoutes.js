@@ -12,8 +12,14 @@ const emailRegex = new RegExp(
 );
 
 vendedorRoutes.post(
-  "/cadastrar",
+  "/:usuario_id/cadastrar",
   celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      usuario_id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
     [Segments.BODY]: Joi.object().keys({
       nome: Joi.string()
         .min(3)
@@ -37,17 +43,28 @@ vendedorRoutes.post(
   vendedorController.cadastrarVendedor
 );
 
-//Criar rota que mostre os vendedores ativos da loja, (ALFABÉTICA), e se está trabalhando ou não.
+//status vendedores
 vendedorRoutes.get("/status", vendedorController.listaTodos);
 
+//dados vendedores
 vendedorRoutes.get("/:id", vendedorController.ListaVendedor);
 
 vendedorRoutes.patch(
   "/editar/:id/:usuario_id",
+  celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      usuario_id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+      id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
+  }),
   isAuthenticated,
   vendedorController.Editar
 );
-
-//routes
 
 module.exports = vendedorRoutes;

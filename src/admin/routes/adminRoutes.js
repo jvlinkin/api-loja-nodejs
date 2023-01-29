@@ -4,6 +4,7 @@ const { celebrate, Joi, Segments } = require("celebrate");
 const AdminController = require("../controller/AdminController");
 const clientesRoutes = require("../../clientes/routes/clientesRoutes");
 const ClienteController = require("../../clientes/controller/ClienteController");
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 const adminController = new AdminController();
 
 //cadastrar um cliente
@@ -11,9 +12,17 @@ const adminController = new AdminController();
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 );
+
+//Somente ADMIN com a proprieda isAdmin == true no banco consegue cadastrar admin novos no sistema.
 adminRoutes.post(
-  "/cadastro",
+  "/:usuario_id/cadastro",
   celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      usuario_id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
     [Segments.BODY]: Joi.object().keys({
       nome: Joi.string()
         .min(3)
@@ -58,9 +67,13 @@ adminRoutes.post(
 );
 
 adminRoutes.get(
-  "/resumo/:mes/:ano",
+  "/:usuario_id/resumo/:mes/:ano",
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
+      usuario_id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
       mes: Joi.string()
         .length(2)
         .message("Número de caracteres deve ter no máximo dois dígitos")
