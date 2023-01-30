@@ -59,7 +59,6 @@ clientesRoutes.post(
 clientesRoutes.get("/listar", clienteController.ListarClientes);
 clientesRoutes.get("/:id", clienteController.ListaCliente);
 
-//Id cliente, e id usuário
 clientesRoutes.patch(
   "/editar/:id/:usuario_id",
   isAuthenticated,

@@ -7,7 +7,6 @@ const ClienteController = require("../../clientes/controller/ClienteController")
 const isAuthenticated = require("../../middlewares/isAuthenticated");
 const adminController = new AdminController();
 
-//cadastrar um cliente
 
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/

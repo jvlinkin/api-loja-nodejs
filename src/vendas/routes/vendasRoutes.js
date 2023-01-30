@@ -5,7 +5,6 @@ const vendasController = new VendasController();
 const { celebrate, Joi, Segments } = require("celebrate");
 const isAuthenticated = require("../../middlewares/isAuthenticated");
 
-//routes
 vendasRoutes.post(
   "/cadastrar",
   celebrate({

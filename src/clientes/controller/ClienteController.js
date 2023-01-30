@@ -163,10 +163,7 @@ class ClienteController {
         ...clienteBody,
       };
 
-      const dados_atualizados = await clienteModel.findByIdAndUpdate(
-        id,
-        clienteData
-      );
+      await clienteModel.findByIdAndUpdate(id, clienteData);
 
       return res.status(200).json({
         status: 200,
