@@ -59,7 +59,9 @@ class ClienteController {
       .exec();
 
     if (!clientes) {
-      return res.status(404).json({ message: "Nenhum cliente encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Nenhum cliente encontrado." });
     }
 
     const listaClientes = [];
@@ -96,7 +98,9 @@ class ClienteController {
     const cliente = await clienteModel.findById(id);
 
     if (!cliente) {
-      return res.status(200).json({ message: "Cliente não encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Cliente não encontrado." });
     }
 
     const compras = await vendasModel
@@ -142,7 +146,8 @@ class ClienteController {
     try {
       const isAdmin = await adminModel.findById(usuario_id);
       if (!isAdmin.isAdmin) {
-        return res.status(400).json({
+        return res.status(401).json({
+          status: 401,
           message: "Admin não tem permissão para executar essa ação.",
         });
       }
@@ -150,7 +155,9 @@ class ClienteController {
       const cliente = await clienteModel.findById(id);
 
       if (!cliente) {
-        return res.status(200).json({ message: "Cliente não encontrado." });
+        return res
+          .status(404)
+          .json({ status: 404, message: "Cliente não encontrado." });
       }
 
       if (Object.keys(req.body).length === 0) {

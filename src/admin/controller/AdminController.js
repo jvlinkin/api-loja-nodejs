@@ -18,7 +18,7 @@ class AdminController {
       return res.status(400).json({ message: "Admin não encontrado." });
     }
     if (!isAdmin.isAdmin) {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "Admin não autorizado a fazer esse tipo de operação.",
       });
     }

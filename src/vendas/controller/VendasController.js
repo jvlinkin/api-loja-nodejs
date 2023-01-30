@@ -9,24 +9,31 @@ class VendasController {
 
     const cliente = await clienteModel.findById(clienteId);
     if (!cliente) {
-      return res.status(400).json({ message: "Cliente não encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Cliente não encontrado." });
     }
 
     const vendedor = await vendedorModel.findById(vendedorId);
     if (!vendedor) {
-      return res.status(400).json({ message: "Vendedor não encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Vendedor não encontrado." });
     }
     if (
       formaPagamento != "pix" &&
       formaPagamento != "dinheiro" &&
       formaPagamento != "cartão"
     ) {
-      return res.status(400).json({ message: "Forma de pagamento inválida" });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Forma de pagamento inválida" });
     }
 
     //o vendedor não consegue vender pra um cliente que não seja um cliente DELE.
     if (cliente.vendedorId != vendedorId) {
-      return res.status(400).json({
+      return res.status(401).json({
+        status: 401,
         message: "Vendedor não autorizado a vender para esse cliente",
       });
     }
@@ -46,11 +53,11 @@ class VendasController {
       .then(() => {
         return res
           .status(200)
-          .json({ message: "Venda cadastrada com sucesso!" });
+          .json({ status: 200, message: "Venda cadastrada com sucesso!" });
       })
       .catch((err) => {
         console.log("ERRO: ", err);
-        return res.status(400).json({
+        return res.status(500).json({
           message: "Ocorreu um erro ao cadastrar a venda. Tente novamente.",
         });
       });
@@ -132,11 +139,9 @@ class VendasController {
       }
 
       if (!isAdmin.isAdmin) {
-        return res
-          .status(400)
-          .json({
-            message: "Admin não autorizado a fazer esse tipo de operação.",
-          });
+        return res.status(400).json({
+          message: "Admin não autorizado a fazer esse tipo de operação.",
+        });
       }
       const venda = await vendasModel.findById(id);
 

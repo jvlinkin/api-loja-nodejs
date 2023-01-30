@@ -13,17 +13,22 @@ class VendedorController {
     const isAdmin = await adminModel.findById(usuario_id);
 
     if (!isAdmin) {
-      return res.status(500).json({ message: "Admin não encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Admin não encontrado." });
     }
     if (!isAdmin.isAdmin) {
-      return res.status(400).json({
+      return res.status(401).json({
+        status: 401,
         message: "Admin não autorizado a fazer esse tipo de operação.",
       });
     }
 
     const user = await vendedorModel.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "Vendedor já existe." });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Vendedor já existe." });
     }
 
     //hash
@@ -44,7 +49,7 @@ class VendedorController {
       .then(() => {
         return res
           .status(200)
-          .json({ message: "Vendedor cadastrado com sucesso!" });
+          .json({ status: 200, message: "Vendedor cadastrado com sucesso!" });
       })
       .catch((err) => {
         console.log("ERRO: ", err);
@@ -58,7 +63,9 @@ class VendedorController {
     const vendedores = await vendedorModel.find({ ativo: true }).sort("nome");
 
     if (!vendedores) {
-      return res.status(200).json({ message: "Nenhum vendedor encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Nenhum vendedor encontrado." });
     }
 
     const horaAtual = moment();
@@ -85,7 +92,9 @@ class VendedorController {
     const vendedor = await vendedorModel.findById(id);
 
     if (!vendedor) {
-      return res.status(400).json({ message: "Vendedor não encontrado." });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Vendedor não encontrado." });
     }
 
     const quantidadeVendas = await vendasModel.find({ vendedorId: id }).count(); //quantidade de vendas.
@@ -142,16 +151,22 @@ class VendedorController {
     try {
       const isAdmin = await adminModel.findById(usuario_id);
       if (!isAdmin) {
-        return res.status(400).json({ message: "Admin não encontrado." });
+        return res
+          .status(404)
+          .json({ status: 404, message: "Admin não encontrado." });
       }
 
       if (!isAdmin.isAdmin) {
-        return res.status(400).json({ message: "Admin não tem permissão." });
+        return res
+          .status(401)
+          .json({ status: 401, message: "Admin não tem permissão." });
       }
       const vendedor = await vendedorModel.findById(id);
 
       if (!vendedor) {
-        return res.status(200).json({ message: "Vendedor não encontrado." });
+        return res
+          .status(404)
+          .json({ status: 404, message: "Vendedor não encontrado." });
       }
 
       if (Object.keys(req.body).length === 0) {
