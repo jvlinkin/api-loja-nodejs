@@ -53,6 +53,18 @@ vendasRoutes.get(
 );
 vendasRoutes.patch(
   "/editar/:id/:usuario_id",
+  celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+      usuario_id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
+  }),
   isAuthenticated,
   vendasController.Editar
 );
