@@ -54,7 +54,18 @@ vendedorRoutes.post(
 vendedorRoutes.get("/status", vendedorController.listaTodos);
 
 //dados vendedores
-vendedorRoutes.get("/:id", vendedorController.ListaVendedor);
+vendedorRoutes.get(
+  "/:id",
+  celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
+  }),
+  vendedorController.ListaVendedor
+);
 
 vendedorRoutes.patch(
   "/editar/:id/:usuario_id",
