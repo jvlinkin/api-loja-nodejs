@@ -16,6 +16,7 @@ const emailRegex = new RegExp(
 //Somente ADMIN com a proprieda isAdmin == true no banco consegue cadastrar admin novos no sistema.
 adminRoutes.post(
   "/:usuario_id/cadastro",
+  isAuthenticated,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       usuario_id: Joi.string()

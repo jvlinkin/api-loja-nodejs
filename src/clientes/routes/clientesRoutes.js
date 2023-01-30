@@ -11,20 +11,13 @@ const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 );
 clientesRoutes.post(
-  "/:usuario_id/cadastrar",
-  isAuthenticated,
+  "/cadastrar",
   celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      usuario_id: Joi.string()
-        .length(24)
-        .message("Número de caracteres inválido")
-        .required(),
-    }),
     [Segments.BODY]: Joi.object().keys({
       nome: Joi.string()
         .min(3)
         .message("Numero de caracteres não é válido.")
-        .max(15)
+        .max(30)
         .message("Numero de caracteres não é válido.")
         .required(),
       idade: Joi.number().min(18).message("Idade não permitida").required(),
@@ -63,12 +56,8 @@ clientesRoutes.post(
   clienteController.CadastrarCliente
 );
 
-clientesRoutes.get(
-  "/listar",
-  isAuthenticated,
-  clienteController.ListarClientes
-);
-clientesRoutes.get("/:id", isAuthenticated, clienteController.ListaCliente);
+clientesRoutes.get("/listar", clienteController.ListarClientes);
+clientesRoutes.get("/:id", clienteController.ListaCliente);
 
 //Id cliente, e id usuário
 clientesRoutes.patch(

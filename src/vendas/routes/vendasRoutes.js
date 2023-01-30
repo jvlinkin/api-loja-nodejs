@@ -8,7 +8,6 @@ const isAuthenticated = require("../../middlewares/isAuthenticated");
 //routes
 vendasRoutes.post(
   "/cadastrar",
-  isAuthenticated,
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       clienteId: Joi.string()
@@ -41,7 +40,18 @@ vendasRoutes.post(
 );
 
 vendasRoutes.get("/listatodos", vendasController.listatodos);
-vendasRoutes.get("/:id", vendasController.listavenda);
+vendasRoutes.get(
+  "/:id",
+  celebrate({
+    [Segments.PARAMS]: Joi.object().keys({
+      id: Joi.string()
+        .length(24)
+        .message("Número de caracteres inválido")
+        .required(),
+    }),
+  }),
+  vendasController.listavenda
+);
 vendasRoutes.patch(
   "/editar/:id/:usuario_id",
   isAuthenticated,

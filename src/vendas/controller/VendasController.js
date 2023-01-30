@@ -2,6 +2,7 @@ const clienteModel = require("../../clientes/models/clientesModel");
 const vendedorModel = require("../../vendedores/models/vendedorModel");
 const vendasModel = require("../models/vendasModel");
 const moment = require("moment");
+const adminModel = require("../../admin/models/adminModel");
 class VendasController {
   async cadastrarVenda(req, res) {
     const { clienteId, vendedorId, valorCompra, formaPagamento } = req.body;
@@ -120,10 +121,23 @@ class VendasController {
   }
 
   async Editar(req, res) {
-    const { id } = req.params;
+    const { id, usuario_id } = req.params;
     const vendaBody = req.body;
 
     try {
+      const isAdmin = await adminModel.findById(usuario_id);
+
+      if (!isAdmin) {
+        return res.status(400).json({ message: "Admin não encontrado." });
+      }
+
+      if (!isAdmin.isAdmin) {
+        return res
+          .status(400)
+          .json({
+            message: "Admin não autorizado a fazer esse tipo de operação.",
+          });
+      }
       const venda = await vendasModel.findById(id);
 
       if (!venda) {

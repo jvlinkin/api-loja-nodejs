@@ -58,6 +58,7 @@ vendedorRoutes.get("/:id", vendedorController.ListaVendedor);
 
 vendedorRoutes.patch(
   "/editar/:id/:usuario_id",
+  isAuthenticated,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       usuario_id: Joi.string()
@@ -70,7 +71,7 @@ vendedorRoutes.patch(
         .required(),
     }),
   }),
-  isAuthenticated,
+
   vendedorController.Editar
 );
 

@@ -7,12 +7,6 @@ class ClienteController {
   async CadastrarCliente(req, res) {
     const { nome, idade, email, telefone, cpf, cep, complemento, vendedorId } =
       req.body;
-    const { usuario_id } = req.params;
-
-    const isAdmin = await adminModel.findById(usuario_id);
-    if (!isAdmin) {
-      return res.status(400).json({ message: "Admin não encontrado." });
-    }
 
     const cliente = await clienteModel.findOne({ email });
 
@@ -59,7 +53,10 @@ class ClienteController {
   }
 
   async ListarClientes(req, res) {
-    const clientes = await clienteModel.find({ ativo: true }).sort("nome");
+    const clientes = await clienteModel
+      .find({ ativo: true })
+      .sort({ nome: 1 })
+      .exec();
 
     if (!clientes) {
       return res.status(404).json({ message: "Nenhum cliente encontrado." });
@@ -67,7 +64,6 @@ class ClienteController {
 
     const listaClientes = [];
 
-    //recuperar data ultima compra
     const promises = clientes.map(async (cliente) => {
       const ultimaCompra = await vendasModel
         .find({ clienteId: cliente._id, ativo: true })
@@ -75,13 +71,21 @@ class ClienteController {
         .limit(1)
         .exec();
 
+      let dataCompra = undefined;
+      if (ultimaCompra.length > 0) {
+        dataCompra = ultimaCompra[0].dataCompra;
+      }
+
       listaClientes.push({
         nome_cliente: cliente.nome,
         vendedor: cliente.vendedorNome,
-        ultima_compra: ultimaCompra[0].dataCompra,
+        ultima_compra: dataCompra,
       });
     });
     await Promise.all(promises);
+
+    //A lista não estava vindo de forma alfabética, pois a operação dentro do map é assíncrona. Correção:
+    listaClientes.sort((a, b) => a.nome_cliente.localeCompare(b.nome_cliente));
 
     return res.status(200).json(listaClientes);
   }
@@ -138,11 +142,9 @@ class ClienteController {
     try {
       const isAdmin = await adminModel.findById(usuario_id);
       if (!isAdmin.isAdmin) {
-        return res
-          .status(400)
-          .json({
-            message: "Admin não tem permissão para executar essa ação.",
-          });
+        return res.status(400).json({
+          message: "Admin não tem permissão para executar essa ação.",
+        });
       }
 
       const cliente = await clienteModel.findById(id);

@@ -11,6 +11,10 @@ class VendedorController {
     const { nome, idade, cidade, email, senha, porcentagemComissao } = req.body;
 
     const isAdmin = await adminModel.findById(usuario_id);
+
+    if (!isAdmin) {
+      return res.status(500).json({ message: "Admin não encontrado." });
+    }
     if (!isAdmin.isAdmin) {
       return res.status(400).json({
         message: "Admin não autorizado a fazer esse tipo de operação.",
@@ -96,7 +100,8 @@ class VendedorController {
         },
       ])
       .exec();
-    //console.log(somaVendas[0]);
+    let valorTotalVendas = 0;
+    let valorComissao = 0;
 
     const vendedor_info = {
       dados_vendedor: {
@@ -111,10 +116,21 @@ class VendedorController {
       },
       resumo_vendas: {
         quantidade_vendas: quantidadeVendas, //2
-        valor_total_vendas: somaVendas[0].total, //soma dos valores;
-        comissao: somaVendas[0].total * vendedor.porcentagemComissao,
+        valor_total_vendas: valorTotalVendas, //soma dos valores;
+        comissao: valorComissao,
       },
     };
+
+    if (!somaVendas || somaVendas.length === 0) {
+      vendedor_info.resumo_vendas.comissao = 0;
+      vendedor_info.resumo_vendas.valor_total_vendas = 0;
+    } else {
+      valorComissao = vendedor_info.resumo_vendas.comissao =
+        somaVendas[0].total * vendedor.porcentagemComissao;
+
+      valorTotalVendas = vendedor_info.resumo_vendas.valor_total_vendas =
+        somaVendas[0].total;
+    }
 
     return res.status(200).json(vendedor_info);
   }
